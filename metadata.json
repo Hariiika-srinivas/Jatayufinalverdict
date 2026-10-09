@@ -1,0 +1,6 @@
+{
+  "name": "JATAYU Command Center",
+  "description": "Autonomous AI Virtual Drone for multi-satellite disaster discovery, dual-tier flood & building damage analysis, and prioritized emergency alerting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
