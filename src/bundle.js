@@ -48836,7 +48836,7 @@ function playDemoEarlyWarningTone(muted) {
   }
 }
 
-// JATAYU 2.0 Server-Side Telegram Dispatch & Connection Helpers
+// JATAYU 2.0 Server-Side Telegram Dispatch & Connection Helpers (Defensive JSON Parsing)
 async function dispatchTelegramAlert(payload) {
   try {
     const res = await fetch('/api/telegram-alert', {
@@ -48844,8 +48844,19 @@ async function dispatchTelegramAlert(payload) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    return data;
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      return data;
+    } else {
+      const text = await res.text();
+      const snippet = text.replace(/<[^>]*>?/gm, '').trim().substring(0, 150);
+      return {
+        ok: false,
+        error: `Server error (HTTP ${res.status}): ${snippet || 'Non-JSON response from serverless backend'}`
+      };
+    }
   } catch (err) {
     console.warn('[JATAYU] Telegram dispatch failed:', err);
     return { ok: false, error: err?.message || 'Network error reaching Telegram API gateway' };
@@ -48858,8 +48869,19 @@ async function testTelegramConnection() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
-    const data = await res.json();
-    return data;
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      return data;
+    } else {
+      const text = await res.text();
+      const snippet = text.replace(/<[^>]*>?/gm, '').trim().substring(0, 150);
+      return {
+        ok: false,
+        error: `Backend error (HTTP ${res.status}): ${snippet || 'Check Vercel deployment & environment variables'}`
+      };
+    }
   } catch (err) {
     console.warn('[JATAYU] Telegram test failed:', err);
     return { ok: false, error: err?.message || 'Network error reaching Telegram test gateway' };
